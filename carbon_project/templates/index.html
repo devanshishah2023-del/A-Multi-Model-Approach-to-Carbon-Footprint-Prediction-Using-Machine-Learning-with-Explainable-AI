@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Footprint Predictor with Explainable AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Carbon Footprint Predictor</h1>
+            <p class="subtitle">AI-powered prediction with explainable results</p>
+            {% if has_shap %}
+            <p class="xai-badge">Explainable AI Enabled</p>
+            {% endif %}
+        </header>
+
+        <div class="main-content">
+            <div class="form-section">
+                <h2>Enter Your Information</h2>
+                <form id="predictionForm">
+                    
+                    <!-- Numerical Features Section -->
+                    <div class="section">
+                        <h3>Transportation & Energy</h3>
+                        
+                        {% if num_cols %}
+                            {% for col in num_cols %}
+                            <div class="form-group">
+                                <label for="{{ col }}">{{ col.replace('_', ' ').title() }}</label>
+                                <input 
+                                    type="number" 
+                                    id="{{ col }}" 
+                                    name="{{ col }}" 
+                                    step="0.01" 
+                                    value="0"
+                                    required>
+                                <small class="hint">Enter value in appropriate units</small>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Categorical Features Section -->
+                    {% if cat_cols %}
+                    <div class="section">
+                        <h3>Additional Information</h3>
+                        
+                        {% for col in cat_cols %}
+                        <div class="form-group">
+                            <label for="{{ col }}">{{ col.replace('_', ' ').title() }}</label>
+                            <select id="{{ col }}" name="{{ col }}" required>
+                                <option value="">Select an option</option>
+                                {% for option in encoders[col].classes_ %}
+                                <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Submit Button -->
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Calculate Footprint</button>
+                        <button type="reset" class="btn btn-secondary">Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>Your Carbon Footprint</h2>
+                
+                <div class="result-card">
+                    <div class="prediction-value" id="predictionValue">
+                        <span class="value">0.00</span>
+                        <span class="unit">kg CO2e</span>
+                    </div>
+                    
+                    <div class="level-indicator" id="levelIndicator">
+                        <span class="level-badge">Calculating...</span>
+                    </div>
+                    
+                    <div class="description" id="description">
+                        Enter your information and click Calculate to see your carbon footprint.
+                    </div>
+                </div>
+
+                <!-- Explainability Section -->
+                <div class="explanation-card" id="explanationCard" style="display: none;">
+                    <h3>What Contributes Most?</h3>
+                    <p class="explanation-intro">These factors had the biggest impact on your carbon footprint:</p>
+                    <div id="explanationList" class="explanation-list">
+                        <!-- Dynamically populated by JavaScript -->
+                    </div>
+                    <p class="explanation-note">
+                        <strong>How to read this:</strong> Positive values increase your footprint, 
+                        negative values decrease it. Larger absolute values mean bigger impact.
+                    </p>
+                </div>
+
+                <div class="info-box">
+                    <h4>What does this mean?</h4>
+                    <ul>
+                        <li><strong>Very Low (0-5 kg):</strong> Excellent! Keep up the good work.</li>
+                        <li><strong>Low (5-10 kg):</strong> Good! You're doing well.</li>
+                        <li><strong>Moderate (10-15 kg):</strong> Average. Room for improvement.</li>
+                        <li><strong>High (15-20 kg):</strong> Consider reducing your impact.</li>
+                        <li><strong>Very High (20+ kg):</strong> Significant reduction recommended.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Carbon Footprint Predictor - Deep Learning Model with Explainable AI</p>
+            <p>Model trained on real-world carbon emission data with SHAP explanations</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Calculating your carbon footprint...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
